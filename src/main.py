@@ -2,6 +2,7 @@ from modules.image_loader import ImageLoader
 from modules.corner_detector import CornerDetector
 import cv2
 import cv2
+from modules.camera_calibrator import CameraCalibrator
 
 print("OpenCV Version:", cv2.__version__)
 
@@ -39,6 +40,23 @@ def main():
     print(f"Detected {len(corners)} corners.")
 
     print("Corner image saved successfully.")
+    print("\nRunning Camera Calibration...")
 
+    calibrator = CameraCalibrator(
+        pattern_size=PATTERN_SIZE,
+        square_size=1.0
+    )
+
+    camera, camera_matrix, distortion = calibrator.calibrate(
+        image,
+        corners
+    )
+
+    print("\nEstimated Camera Matrix\n")
+    print(camera_matrix)
+
+    print("\nEstimated Distortion\n")
+    print(distortion)
+    
 if __name__ == "__main__":
     main()    
