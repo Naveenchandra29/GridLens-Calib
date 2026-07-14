@@ -3,6 +3,7 @@ from modules.corner_detector import CornerDetector
 import cv2
 import cv2
 from modules.camera_calibrator import CameraCalibrator
+from modules.reprojection import Reprojection
 
 print("OpenCV Version:", cv2.__version__)
 
@@ -57,6 +58,27 @@ def main():
 
     print("\nEstimated Distortion\n")
     print(distortion)
+
+    object_points = calibrator.generate_object_points()
+
+    projected = Reprojection.project_points(
+        object_points,
+        camera.rotation_matrix,
+        camera.translation_vector,
+        camera_matrix,
+        distortion
+    )
+
+    errors = Reprojection.compute_error(
+        corners,
+        projected
+    )
+
+    print("\nReprojection Error")
+    print("----------------------")
+    print(f"Mean : {errors['mean']:.4f} pixels")
+    print(f"RMS  : {errors['rms']:.4f} pixels")
+    print(f"Max  : {errors['max']:.4f} pixels")
     
 if __name__ == "__main__":
     main()    
