@@ -1,15 +1,3 @@
-"""
-===========================================================
-GridLens-Calib
-Module : Image Loader
-Author : M Naveen Chandra
-===========================================================
-
-Purpose:
-    Loads the calibration image and performs basic validation
-    before it enters the camera calibration pipeline.
-"""
-
 from pathlib import Path
 import cv2
 
