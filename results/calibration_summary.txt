@@ -1,0 +1,31 @@
+============================================================
+GridLens-Calib Calibration Report
+============================================================
+
+Image : checkerboard.jpg
+Resolution : 1024 x 768
+
+Detected Corners : 54
+Inliers : 54
+Outliers : 0
+
+Camera Matrix
+[[4.20781764e+03 0.00000000e+00 5.00293018e+02]
+ [0.00000000e+00 4.23893569e+03 3.63658913e+02]
+ [0.00000000e+00 0.00000000e+00 1.00000000e+00]]
+
+Distortion Coefficients
+[[ 6.02124904e+00 -5.12302297e+02 -1.09543069e-02  1.13469569e-02
+  -4.46712238e+04]]
+
+Reprojection Error
+Mean : 0.1041
+RMS : 0.1176
+Maximum : 0.2466
+
+Cost Functions
+Least Squares: 0.7462
+Huber: 0.3731
+Cauchy: 0.7449
+
+Calibration Successful

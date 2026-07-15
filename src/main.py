@@ -12,6 +12,8 @@ from modules.optimizer import Optimizer
 import numpy as np
 from modules.undistorter import Undistorter
 from modules.visualizer import Visualizer
+from modules.evaluation import Evaluation
+from modules.grid_generator import GridGenerator
 
 
 print("OpenCV Version:", cv2.__version__)
@@ -120,25 +122,19 @@ def main():
     print(f"Inliers      : {len(detected_inliers)}")
     print(f"Outliers     : {len(corners)-len(detected_inliers)}")    
 
-    print("\nRunning Optimization Demo...")
+    print("\nPreparing Camera Parameter Optimization...")
 
-    optimizer = Optimizer()
+    initial_parameters = np.array([
+        camera.fx,
+        camera.fy,
+        camera.cx,
+        camera.cy
+    ])
 
-# Initial parameter
-    initial = [5.0]
+    print("Initial Parameters")
 
-# Objective function
-    def objective(x):
-        return np.array([x[0] - 2])
+    print(initial_parameters)
 
-    result = optimizer.optimize(
-        initial,
-        objective
-    )
-
-    optimizer.print_summary(result)
-
-    print("Optimized Value :", result.x)
     print("\nUndistorting Image...")
 
     undistorted, roi = Undistorter.undistort(
@@ -153,6 +149,25 @@ def main():
     )
 
     print("Undistorted image saved successfully.")
+
+    print("\nGenerating Undistorted Grid...")
+
+    grid = GridGenerator(PATTERN_SIZE)
+
+    grid_image, success = grid.generate(
+        undistorted
+    )
+
+    cv2.imwrite(
+        "../data/output/undistorted_grid.jpg",
+        grid_image
+    )
+
+    if success:
+        print("Undistorted grid generated successfully.")
+    else:
+        print("Grid could not be detected.")
+
     print("\nGenerating Residual Visualization...")
 
     residual_image = Visualizer.draw_residuals(
@@ -167,6 +182,30 @@ def main():
     )
 
     print("Residual visualization saved.")
+    print("\nGenerating Evaluation Report...")
+
+    Evaluation.print_summary(
+        image_name="checkerboard.jpg",
+        image_shape=image.shape,
+        corners=len(corners),
+        inliers=len(detected_inliers),
+        errors=errors,
+        costs=costs
+    )
+
+    Evaluation.save_summary(
+        "../results/calibration_summary.txt",
+        image_name="checkerboard.jpg",
+        image_shape=image.shape,
+        corners=len(corners),
+        inliers=len(detected_inliers),
+        errors=errors,
+        costs=costs,
+        camera_matrix=camera_matrix,
+        distortion=distortion
+    )
+
+print("Calibration report saved.")
 
     
 if __name__ == "__main__":
