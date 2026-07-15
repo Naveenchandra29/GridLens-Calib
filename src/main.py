@@ -1,9 +1,18 @@
+from matplotlib import image
+
 from modules.image_loader import ImageLoader
 from modules.corner_detector import CornerDetector
 import cv2
 import cv2
 from modules.camera_calibrator import CameraCalibrator
 from modules.reprojection import Reprojection
+from modules.cost_function import CostFunction
+from modules.ransac_filter import RANSACFilter
+from modules.optimizer import Optimizer
+import numpy as np
+from modules.undistorter import Undistorter
+from modules.visualizer import Visualizer
+
 
 print("OpenCV Version:", cv2.__version__)
 
@@ -79,6 +88,86 @@ def main():
     print(f"Mean : {errors['mean']:.4f} pixels")
     print(f"RMS  : {errors['rms']:.4f} pixels")
     print(f"Max  : {errors['max']:.4f} pixels")
+
+    print("\nComputing Robust Cost Functions...")
+
+    costs = CostFunction.summarize(
+       corners,
+       projected
+    )
+
+    print("\nCost Function Summary")
+    print("---------------------------")
+
+    for name, value in costs.items():
+        print(f"{name:15s}: {value:.4f}")
+
+    print("\nRunning RANSAC Outlier Removal...")
+
+    ransac = RANSACFilter(threshold=1.5)
+
+    (
+        detected_inliers,
+        projected_inliers,
+        inlier_mask,
+        residuals
+    ) = ransac.filter(
+        corners,
+        projected
+    )
+
+    print(f"Total Points : {len(corners)}")
+    print(f"Inliers      : {len(detected_inliers)}")
+    print(f"Outliers     : {len(corners)-len(detected_inliers)}")    
+
+    print("\nRunning Optimization Demo...")
+
+    optimizer = Optimizer()
+
+# Initial parameter
+    initial = [5.0]
+
+# Objective function
+    def objective(x):
+        return np.array([x[0] - 2])
+
+    result = optimizer.optimize(
+        initial,
+        objective
+    )
+
+    optimizer.print_summary(result)
+
+    print("Optimized Value :", result.x)
+    print("\nUndistorting Image...")
+
+    undistorted, roi = Undistorter.undistort(
+        image,
+        camera_matrix,
+        distortion
+    )
+
+    cv2.imwrite(
+        "../data/output/undistorted_checkerboard.jpg",
+        undistorted
+    )
+
+    print("Undistorted image saved successfully.")
+    print("\nGenerating Residual Visualization...")
+
+    residual_image = Visualizer.draw_residuals(
+        image,
+        corners,
+        projected
+    )
+
+    cv2.imwrite(
+        "../data/output/residual_visualization.jpg",
+        residual_image
+    )
+
+    print("Residual visualization saved.")
+
     
 if __name__ == "__main__":
     main()    
